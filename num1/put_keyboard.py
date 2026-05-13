@@ -2,59 +2,64 @@ import keyboard
 import multiprocessing
 import time
 import sys
+import pyautogui
+
+time_begin = 0
+
+
 def auto_create(name: str, time_start: float, time_end: float):
-    p = multiprocessing.Process(target=v, args=(name.replace(' ', ""), time_start, time_end))
+    p = multiprocessing.Process(target=press_key_process, args=(name.replace(' ', ""), time_start, time_end))
     p.start()
 
 
-def v(name: str, time_start: float, time_end: float):
-
+def press_key_process(name: str, time_start: float, time_end: float):
     time1 = time.time()
     print("start", name, time_start, time_end)
-    keyboard.press(name)
+    # keyboard.press(name)
+    pyautogui.keyDown(name)
     while 1:
         time2 = time.time()
-        if int((time2 - time1)*1000) > (time_end - time_start):
-            keyboard.release(name)
+        if int((time2 - time1) * 1000) > (time_end - time_start):
+            # keyboard.release(name)
+            pyautogui.keyUp(name)
             print("release", name)
             break
     # multiprocessing.current_process().terminate()
 
 
 def react_keyboard(file_name):
-    time.sleep(2)
-    all_start_time = []
+    all_keys = []
     with open(file_name, 'r') as file:
         str_list = file.readlines()
+        # print(str_list)
         for i in str_list:
-            print(eval(i), type(eval(i)))
             this_list = eval(i)
-            all_start_time.append(this_list[1][0])
-    print(all_start_time)
+            all_keys.append(this_list)
+
+    next_key_index = 0
+    next_key = all_keys[next_key_index]
+    print("put_keyboard", time.time())
+
+    global time_begin
     time_begin = time.time()
     while 1:
-        current_time = int((time.time() - time_begin)*1000)
-        current_key = 0
-        # print(current_time)
-        if current_time in all_start_time or current_time-1 in all_start_time or current_time-2 in all_start_time:
-            if current_time in all_start_time:
-                current_time = current_time
-            elif current_time-1 in all_start_time:
-                current_time = current_time-1
-            elif current_time-2 in all_start_time:
-                current_time = current_time-2
-            print("Timeout reached", current_time)
-            current_key = eval(str_list[all_start_time.index(current_time)])
-            print(current_key)
-            all_start_time[all_start_time.index(current_time)] = all_start_time.index(current_time)
-            auto_create(current_key[0], current_key[1][0], current_key[1][1])
-        if all_start_time[-1] == len(all_start_time)-1:
-            break
+        current_time = int((time.time() - time_begin) * 1000)
+        if current_time > next_key[1][0]:
+            auto_create(str(next_key[0]), next_key[1][0], next_key[1][1])
+            next_key_index += 1
+            if next_key_index == len(all_keys):
+                break
+            next_key = all_keys[next_key_index]
+
+
+def put_keyboard(file_name):
+
+    react_keyboard(file_name)
 
 
 if __name__ == '__main__':
-    if len(sys.argv) != 2:
-        print("Usage: python script_name.py <file_name>")
-        sys.exit(1)
-    file_name = sys.argv[1]
-    react_keyboard(file_name)
+    # if len(sys.argv) != 2:
+    #     print("Usage: python script_name.py <file_name>")
+    #     sys.exit(1)
+    # file_name = sys.argv[1]
+    react_keyboard("save/dir1/save2.txt")

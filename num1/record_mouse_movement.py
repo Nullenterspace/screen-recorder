@@ -13,7 +13,7 @@ def record_mouse_movement():
         time.sleep(0.0015)
         if keyboard.is_pressed('f1'):
             break
-    with open('save/mouse_movement.csv', 'w', newline='') as csvfile:
+    with open('save/dir1/mouse_movement.csv', 'w', newline='') as csvfile:
         # 创建CSV写入对象
         csv_writer = csv.writer(csvfile)
         print(len(mouse_movement))

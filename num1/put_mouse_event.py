@@ -4,58 +4,79 @@ import json
 import time
 import os
 
-# ===================== 路径配置 =====================
-SAVE_FOLDER = "save"
-PARAM_FOLDER = "param"
-config_path = os.path.join(PARAM_FOLDER, "frame_config.json")
+# 关闭 PyAutoGUI 防呆保护（解决你之前的报错）
+pyautogui.FAILSAFE = False
 
-# 读取帧间隔
-with open(config_path, "r", encoding="utf-8") as f:
-    config = json.load(f)
-frame_interval = config["frame_interval"]
+class MousePlayer:
+    def __init__(self):
+        self.PARAM_FOLDER = "param"
+        self.frame_interval = 0.01
+        self.last_left = 0
+        self.last_right = 0
 
-# ===================== 读取录制数据 =====================
-data = []
-with open(os.path.join(SAVE_FOLDER, "mouse_movement.csv"), "r", encoding="utf-8") as f:
-    reader = csv.reader(f)
-    for row in reader:
-        x = float(row[0])
-        y = float(row[1])
-        left = int(row[2])
-        right = int(row[3])
-        scroll = int(row[4])
-        data.append([x, y, left, right, scroll])
+    def load_config(self):
+        """读取帧间隔配置"""
+        try:
+            config_path = os.path.join(self.PARAM_FOLDER, "frame_config.json")
+            with open(config_path, "r", encoding="utf-8") as f:
+                config = json.load(f)
+            self.frame_interval = config.get("frame_interval", 0.01)
+        except:
+            self.frame_interval = 0.01
 
-# ===================== 开始回放 =====================
-print("开始回放鼠标，共 %d 帧" % len(data))
-time.sleep(1)
+    def load_data(self, csv_file_path):
+        """
+        从外部传入 CSV 完整路径
+        :param csv_file_path: 如 save/123.csv
+        """
+        data = []
+        with open(csv_file_path, "r", encoding="utf-8") as f:
+            reader = csv.reader(f)
+            for row in reader:
+                x = float(row[0])
+                y = float(row[1])
+                left = int(row[2])
+                right = int(row[3])
+                scroll = int(row[4])
+                data.append([x, y, left, right, scroll])
+        return data
 
-last_left = 0
-last_right = 0
+    def play(self, csv_file_path):
+        """
+        播放指定 CSV 文件
+        :param csv_file_path: 外部传入的完整路径
+        """
+        self.load_config()
+        data = self.load_data(csv_file_path)
+        print(f"开始回放鼠标，共 {len(data)} 帧", time.time())
 
-for x, y, left, right, scroll in data:
-    pyautogui.moveTo(x, y, _pause=False)
+        self.last_left = 0
+        self.last_right = 0
 
-    # 左键
-    if left != last_left:
-        if left == 1:
-            pyautogui.mouseDown(button="left", _pause=False)
-        else:
-            pyautogui.mouseUp(button="left", _pause=False)
-        last_left = left
+        for x, y, left, right, scroll in data:
+            pyautogui.moveTo(x, y, _pause=False)
 
-    # 右键
-    if right != last_right:
-        if right == 1:
-            pyautogui.mouseDown(button="right", _pause=False)
-        else:
-            pyautogui.mouseUp(button="right", _pause=False)
-        last_right = right
+            # 左键
+            if left != self.last_left:
+                if left == 1:
+                    pyautogui.mouseDown(button="left", _pause=False)
+                else:
+                    pyautogui.mouseUp(button="left", _pause=False)
+                self.last_left = left
 
-    # 滚轮
-    if scroll != 0:
-        pyautogui.scroll(scroll, _pause=False)
+            # 右键
+            if right != self.last_right:
+                if right == 1:
+                    pyautogui.mouseDown(button="right", _pause=False)
+                else:
+                    pyautogui.mouseUp(button="right", _pause=False)
+                self.last_right = right
 
-    time.sleep(frame_interval)
+            time.sleep(self.frame_interval)
 
-print(" 回放完成！")
+        print("回放完成！")
+
+if __name__ == "__main__":
+    # 测试：直接传入文件路径
+    player = MousePlayer()
+    player.play("save/mouse_movement.csv")

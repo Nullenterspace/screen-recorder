@@ -65,13 +65,13 @@ listener = mouse.Listener(
 )
 listener.start()
 
-print(" 开始录制鼠标，按 F1 停止")
+print(" 开始录制鼠标，按 F10 停止")
 print(f" 帧间隔：{frame_interval}s")
 
 # ===================== 主循环 =====================
 while True:
     reset_scroll_when_idle()
-    if keyboard.is_pressed("f1"):
+    if keyboard.is_pressed("f10"):
         print(" 停止录制")
         break
 
@@ -89,7 +89,7 @@ while True:
 listener.stop()
 
 # ===================== 写入CSV（完全按你的写法） =====================
-with open('save/mouse_movement.csv', 'w', newline='') as csvfile:
+with open('save/dir1/mouse_movement.csv', 'w', newline='') as csvfile:
     csv_writer = csv.writer(csvfile)
     print(len(mouse_movement))
     for event in mouse_movement:

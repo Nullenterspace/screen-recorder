@@ -82,8 +82,14 @@ class Window_mouse:
 
         keyboard.on_press_key("space", self.toggle_pause)
         self.load_param()
-        self.draw_movement()
+
+    def start_show_mouse_movement(self, path):
+        self.draw_movement(path)
         self.start_mouse_listener()
+
+    def clear(self):
+        self.mouse_data = []
+        self.draw_position = []  # 轨迹绘制仅用x/y
 
     def load_param(self):
         with open("../param/frame_config.json", "r", encoding="utf-8") as f:
@@ -211,10 +217,10 @@ class Window_mouse:
 
     def on_closing(self):
         self.root.destroy()
-        sys.exit()
+        # sys.exit()
 
-    def draw_movement(self):
-        self.show_mouse_movement()
+    def draw_movement(self, path):
+        self.show_mouse_movement(path)
         # 绘制轨迹线（仅用x/y）
         for i in range(len(self.draw_position) - 1):
             x1, y1 = self.draw_position[i]
@@ -228,8 +234,8 @@ class Window_mouse:
         self.move_step(0, self.img_mouse_id)
 
     # 读取完整的CSV数据（保留5列）
-    def show_mouse_movement(self):
-        with open("../save/mouse_movement.csv", "r", encoding="utf-8") as f:
+    def show_mouse_movement(self, path):
+        with open(path, "r", encoding="utf-8") as f:
             reader = csv.reader(f)
             for row in reader:
                 # 解析5列数据：x/y（缩放）、左键、右键、滚轮
@@ -246,4 +252,5 @@ class Window_mouse:
 if __name__ == '__main__':
     root = tk.Tk()
     win = Window_mouse(root)
+    win.start_show_mouse_movement("../save/mouse_movement.csv")
     root.mainloop()
