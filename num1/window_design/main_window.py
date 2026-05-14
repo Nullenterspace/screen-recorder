@@ -2,9 +2,11 @@ import tkinter as tk
 import os
 import re
 import json
-import threading  # 新增：多线程库
+import threading
 from tkinter import messagebox
-from put_keyboard import react_keyboard
+
+# 导入统一
+from put_keyboard import KeyboardSimulator
 from put_mouse_event import MousePlayer
 from show_mouse_movement import Window_mouse
 
@@ -30,6 +32,13 @@ class MainWindow(tk.Frame):
 
         self.mouse_player_root = None
         self.mouse_player = None
+
+        # ===================== 统一实例命名 =====================
+        # 鼠标播放器实例
+        self.mouse_player = MousePlayer()
+        # 键盘模拟器实例（命名风格对齐）
+        self.keyboard_player = KeyboardSimulator()
+        # ========================================================
 
         self.packing()
 
@@ -102,7 +111,7 @@ class MainWindow(tk.Frame):
     def insert_saved_files(self, listbox):
         self.refresh_list()
 
-    # ========== 【核心修改】并行执行文件夹内文件 ==========
+    # ========== 统一调用方式：复用实例，不重复创建 ==========
     def play(self):
         path = os.path.join(self.work_path, self.List1.get(self.chosen_index))
         print("执行：", path)
@@ -113,43 +122,39 @@ class MainWindow(tk.Frame):
         if os.path.isdir(path):
             files = os.listdir(path)
             found = False
-            thread_list = []  # 线程列表
+            thread_list = []
 
             for f in files:
                 fp = os.path.join(path, f)
                 if not os.path.isfile(fp):
                     continue
 
-                # TXT文件：创建线程执行键盘操作
+                # 键盘统一调用
                 if f.lower().endswith(".txt"):
-                    t = threading.Thread(target=react_keyboard, args=(fp,), daemon=True)
+                    t = threading.Thread(target=self.keyboard_player.react_keyboard, args=(fp,), daemon=True)
                     thread_list.append(t)
                     found = True
-                # CSV文件：创建线程执行鼠标操作
+                # 鼠标统一调用（复用实例，和键盘完全一致）
                 elif f.lower().endswith(".csv"):
-                    # 封装函数，因为MousePlayer需要实例化
                     def run_csv(csv_path):
-                        player = MousePlayer()
-                        player.play(csv_path)
+                        self.mouse_player.play(csv_path)
 
                     t = threading.Thread(target=run_csv, args=(fp,), daemon=True)
                     thread_list.append(t)
                     found = True
 
-            # 启动所有线程，并行执行
             for t in thread_list:
                 t.start()
 
             if not found:
                 return "error"
 
-        # 处理单个文件（保持原样）
+        # 处理单个文件（调用方式 100% 统一）
         elif os.path.isfile(path):
             if path.lower().endswith(".txt"):
-                react_keyboard(path)
+                self.keyboard_player.react_keyboard(path)
             elif path.lower().endswith(".csv"):
-                player = MousePlayer()
-                player.play(path)
+                self.mouse_player.play(path)
             else:
                 return "error"
         else:

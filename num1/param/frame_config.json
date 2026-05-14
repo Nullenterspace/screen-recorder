@@ -1,4 +1,6 @@
 {
     "frame_interval": 0.0015,
-    "window_scale": 1.5
+    "window_scale": 1.5,
+    "start_button": "f9",
+    "stop_button": "f10"
 }

@@ -3,6 +3,7 @@ import csv
 import json
 import time
 import os
+import keyboard
 
 # 关闭 PyAutoGUI 防呆保护（解决你之前的报错）
 pyautogui.FAILSAFE = False
@@ -10,9 +11,10 @@ pyautogui.FAILSAFE = False
 class MousePlayer:
     def __init__(self):
         self.PARAM_FOLDER = "param"
-        self.frame_interval = 0.01
+        self.frame_interval = 0.0015
         self.last_left = 0
         self.last_right = 0
+        self.load_config()
 
     def load_config(self):
         """读取帧间隔配置"""
@@ -20,9 +22,9 @@ class MousePlayer:
             config_path = os.path.join(self.PARAM_FOLDER, "frame_config.json")
             with open(config_path, "r", encoding="utf-8") as f:
                 config = json.load(f)
-            self.frame_interval = config.get("frame_interval", 0.01)
+            self.frame_interval = config.get("frame_interval", 0.0015)
         except:
-            self.frame_interval = 0.01
+            self.frame_interval = 0.0015
 
     def load_data(self, csv_file_path):
         """
@@ -46,13 +48,17 @@ class MousePlayer:
         播放指定 CSV 文件
         :param csv_file_path: 外部传入的完整路径
         """
-        self.load_config()
+        time_start = time.time()
         data = self.load_data(csv_file_path)
         print(f"开始回放鼠标，共 {len(data)} 帧", time.time())
 
         self.last_left = 0
         self.last_right = 0
 
+        while True:
+            if keyboard.is_pressed('f9'):
+                break
+            time.sleep(0.01)
         for x, y, left, right, scroll in data:
             pyautogui.moveTo(x, y, _pause=False)
 
@@ -74,7 +80,7 @@ class MousePlayer:
 
             time.sleep(self.frame_interval)
 
-        print("回放完成！")
+        print("回放完成！", time.time() - time_start)
 
 if __name__ == "__main__":
     # 测试：直接传入文件路径
