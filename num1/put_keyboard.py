@@ -12,7 +12,7 @@ class KeyboardSimulator:
             with open(config_path, "r", encoding="utf-8") as f:
                 config = json.load(f)
             # 安全取值
-            self.start_button = config.get("start_button", "f9")
+            self.start_button = config.get("start_play_button", "f9")
         except Exception:
             self.start_button = "f9"
         pass

@@ -15,6 +15,7 @@ class MousePlayer:
         self.last_left = 0
         self.last_right = 0
         self.load_config()
+        self.start_button = 'f9'
 
     def load_config(self):
         """读取帧间隔配置"""
@@ -23,6 +24,7 @@ class MousePlayer:
             with open(config_path, "r", encoding="utf-8") as f:
                 config = json.load(f)
             self.frame_interval = config.get("frame_interval", 0.0015)
+            self.start_button = config.get("start_play_button")
         except:
             self.frame_interval = 0.0015
 
@@ -56,7 +58,7 @@ class MousePlayer:
         self.last_right = 0
 
         while True:
-            if keyboard.is_pressed('f9'):
+            if keyboard.is_pressed(self.start_button):
                 break
             time.sleep(0.01)
         for x, y, left, right, scroll in data:
